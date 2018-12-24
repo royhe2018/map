@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sdkj.map.dao.driverInfo.DriverInfoMapper">
+	<resultMap id="BaseResultMap" type="com.sdkj.map.domain.po.DriverInfo">
+		<id column="id" jdbcType="BIGINT" property="id" />
+		<result column="user_id" jdbcType="BIGINT" property="userId" />
+		<result column="id_card_no" jdbcType="VARCHAR" property="idCardNo" />
+		<result column="id_card_type" jdbcType="INTEGER" property="idCardType" />
+		<result column="driving_license_no" jdbcType="VARCHAR"
+			property="drivingLicenseNo" />
+		<result column="driving_license_file_no" jdbcType="VARCHAR"
+			property="drivingLicenseFileNo" />
+		<result column="driving_license_type" jdbcType="VARCHAR"
+			property="drivingLicenseType" />
+		<result column="driving_license_image" jdbcType="VARCHAR"
+			property="drivingLicenseImage" />
+		<result column="id_card_image" jdbcType="VARCHAR" property="idCardImage" />
+		<result column="id_card_back_image" jdbcType="VARCHAR"
+			property="idCardBackImage" />
+		<result column="car_no" jdbcType="VARCHAR" property="carNo" />
+		<result column="car_driving_image" jdbcType="VARCHAR" property="carDrivingImage" />
+		<result column="create_time" jdbcType="VARCHAR" property="createTime" />
+		<result column="status" jdbcType="INTEGER" property="status" />
+		<result column="on_duty_status" jdbcType="INTEGER" property="onDutyStatus" />
+		<result column="register_city" property="registerCity" />
+		<result column="registrion_id" property="registrionId" />
+		<result column="map_terminal_id" property="mapIerminalId" />
+		<result column="account" property="driverPhone" />
+	</resultMap>
+
+	<select id="findSingleDriver" parameterType="java.util.Map"
+		resultMap="BaseResultMap">
+		select *
+		from sdlh_driver_info
+		<trim prefix="where" prefixOverrides="and">
+			<if test="id != null"> and id = #{id}</if>
+			<if test="userId != null"> and user_id = #{userId}</if>
+			<if test="carNo != null"> and car_no = #{carNo}</if>
+			<if test="drivingLicenseFileNo != null"> and driving_license_file_no = #{drivingLicenseFileNo}
+			</if>
+			<if test="idCardNo != null"> and id_card_no = #{idCardNo}</if>
+		</trim>
+	</select>
+
+	<select id="findDriverList" parameterType="java.util.Map"
+		resultMap="BaseResultMap">
+		select d.*,u.registrion_id,u.map_terminal_id,u.account
+		from sdlh_driver_info d
+		inner join sdlh_user u on d.user_id=u.id
+		<trim prefix="where" prefixOverrides="and">
+			<if test="onDutyStatus != null"> and on_duty_status = #{onDutyStatus}</if>
+			<if test="registerCity != null"> and register_city = #{registerCity}</if>
+		</trim>
+	</select>
+	<select id="findDriverInfoExist" parameterType="java.util.Map"
+		resultMap="BaseResultMap">
+		select *
+		from sdlh_driver_info
+		<trim prefix="where" prefixOverrides="or">
+			<if test="userId != null"> or user_id = #{userId}</if>
+			<if test="carNo != null"> or car_no = #{carNo}</if>
+			<if test="drivingLicenseFileNo != null"> or driving_license_file_no = #{drivingLicenseFileNo}
+			</if>
+			<if test="idCardNo != null"> or id_card_no = #{idCardNo}</if>
+		</trim>
+	</select>
+
+</mapper>

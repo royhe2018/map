@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sdkj.map.dao.targetLocation.TargetLocationMapper">
+  <resultMap id="BaseResultMap" type="com.sdkj.map.domain.po.TargetLocation">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="target_type" jdbcType="INTEGER" property="targetType" />
+    <result column="target_id" jdbcType="BIGINT" property="targetId" />
+    <result column="log" jdbcType="VARCHAR" property="log" />
+    <result column="lat" jdbcType="VARCHAR" property="lat" />
+    <result column="create_time" jdbcType="VARCHAR" property="createTime" />
+  </resultMap>
+ 
+  <select id="findSingleLocation" parameterType="java.util.Map" resultMap="BaseResultMap">
+    select *
+    from sdlh_target_location
+    <trim prefix="where" prefixOverrides="and">
+    	<if test="id!=null"> and id = #{id}</if>
+    	<if test="targetId !=null">and target_id=#{targetId}</if>
+    	<if test="targetType !=null">and target_type=#{targetType}</if>
+    </trim>
+    order by id desc
+    limit 0,1
+  </select>
+  
+  <select id="findTargetLocationHistory" parameterType="java.util.Map" resultType="java.util.Map">
+    select log,lat,create_time as createTime
+    from sdlh_target_location
+    <trim prefix="where" prefixOverrides="and">
+    	<if test="targetId !=null">and target_id=#{targetId}</if>
+    	<if test="targetType !=null">and target_type=#{targetType}</if>
+    	<if test="queryDate !=null">and create_time like concat(#{queryDate},"%")</if>
+    </trim>
+    group by  log,lat
+    order by create_time asc
+  </select>
+  
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from sdlh_target_location
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.sdkj.map.domain.po.TargetLocation">
+    insert into sdlh_target_location (id, target_type, target_id, 
+      log, lat, create_time
+      )
+    values (#{id,jdbcType=BIGINT}, #{targetType,jdbcType=INTEGER}, #{targetId,jdbcType=BIGINT}, 
+      #{log,jdbcType=VARCHAR}, #{lat,jdbcType=VARCHAR}, #{createTime,jdbcType=VARCHAR}
+      )
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.sdkj.map.domain.po.TargetLocation">
+    update sdlh_target_location
+    <set>
+      <if test="targetType != null">
+        target_type = #{targetType,jdbcType=INTEGER},
+      </if>
+      <if test="targetId != null">
+        target_id = #{targetId,jdbcType=BIGINT},
+      </if>
+      <if test="log != null">
+        log = #{log,jdbcType=VARCHAR},
+      </if>
+      <if test="lat != null">
+        lat = #{lat,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>
