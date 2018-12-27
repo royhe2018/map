@@ -6,8 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sdkj.map.dao.driverInfo.DriverInfoMapper;
@@ -23,16 +27,23 @@ import com.sdlh.common.HttpsUtil;
 import com.sdlh.common.JsonUtil;
 
 @Service
+@Transactional
 public class PoiSearcherServiceImpl implements PoiSearcherService {
+	
+	private Logger logger = LoggerFactory.getLogger(PoiSearcherServiceImpl.class);
 	
 	private static final String url = "https://restapi.amap.com/v3/assistant/inputtips";
 	
+	private static final String distanceUrl = "https://restapi.amap.com/v3/distance";
 	@Autowired
 	private DriverTraceMapper driverTraceMapper;
 	@Autowired
 	private ShikraMapSerivce shikraMapSerivce;
 	@Autowired
 	private DriverInfoMapper driverInfoMapper;
+	
+	@Value("${gaoDe.map.web.api.key}")
+	private String gaoDeMapWebApiKey;
 	@Override
 	public JsonNode findPoiInfo(Map<String, Object> param) throws Exception {
 		param.put("key", "9d28f5fda07db528d149fc98f40d2d75");
@@ -68,8 +79,15 @@ public class PoiSearcherServiceImpl implements PoiSearcherService {
 	public static void main(String[] args) {
 		try {
 			PoiSearcherServiceImpl test = new PoiSearcherServiceImpl();
-			JsonNode result = test.findPoiInfo(new HashMap<String,Object>());
-			System.out.println(result);
+			List<Integer> approDriverIndexArr=new ArrayList<Integer>();
+			String destlocation="108.855413,34.197591";
+			String origins="108.854726,34.200643|108.883393,34.214485|108.868201,34.194893|108.868116,34.210439";
+			test.findDistanceDriver(destlocation, origins, approDriverIndexArr,0,5000);
+			if(approDriverIndexArr.size()>0) {
+				for(Integer idx:approDriverIndexArr) {
+					System.out.println(idx);
+				}
+			}
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -77,7 +95,7 @@ public class PoiSearcherServiceImpl implements PoiSearcherService {
 	
 	@Override
 	public MobileResultVO queryNearlyDriver(Position position, String cityName,
-			Double distance) {
+			int distance) {
 		MobileResultVO result = new MobileResultVO();
 		Map<String,Object> param = new HashMap<String,Object>();
 		//查当前城市在线司机
@@ -85,8 +103,13 @@ public class PoiSearcherServiceImpl implements PoiSearcherService {
 		param.put("onDutyStatus", 2);
 		List<DriverInfo> driverList = driverInfoMapper.findDriverList(param);
 		List<DriverInfo> destDriverList = new ArrayList<DriverInfo>();
+		String origins = "";
+		String destLocation = position.getLog()+","+position.getLat();
 		if(driverList!=null && driverList.size()>0){
-			for(DriverInfo item:driverList){
+			List<Integer> approDriverIndexArr = new ArrayList<Integer>();
+			int baseIndex =0;
+			for(int i=0;i<driverList.size();i++){
+				DriverInfo item = driverList.get(i);
 				param.clear();
 				param.put("driverPhone", item.getDriverPhone());
 				param.put("date", DateUtilLH.getCurrentDate());
@@ -94,21 +117,58 @@ public class PoiSearcherServiceImpl implements PoiSearcherService {
 				if(trace!=null){
 					MobileResultVO locationResult = shikraMapSerivce.findTerminalCurrentLocation(item.getMapIerminalId(), trace.getTraceId());
 					JsonNode data = JsonUtil.convertObjToJson(locationResult.getData());
-					String location = data.get("location").asText();
-					String[] positonArr = location.split(",");
-					Position destPosition = new Position();
-					destPosition.setLat(Double.valueOf(positonArr[0]));
-					destPosition.setLog(Double.valueOf(positonArr[0]));
-					MobileResultVO distanceMap = getDistance(position,destPosition);
-					JsonNode distanceNum = JsonUtil.convertObjToJson(distanceMap.getData());
-					double realDistance = distanceNum.get("distance").asDouble();
-					if(distance>=realDistance){
-						destDriverList.add(item);
+					if(data!=null && data.has("location")) {
+						String location = data.get("location").asText();
+						if(i>0 && i%90==0) {
+							origins +=location;
+							findDistanceDriver(destLocation,origins,approDriverIndexArr,baseIndex,distance);
+							baseIndex +=90;
+							origins = "";
+						}else {
+							origins +=location+"|";
+						}
 					}
 				}
 			}
+			if(origins!=null && origins.length()>0) {
+				origins = origins.substring(0, origins.length()-1);
+				findDistanceDriver(destLocation,origins,approDriverIndexArr,baseIndex,distance);
+			}
+			if(approDriverIndexArr!=null && approDriverIndexArr.size()>0) {
+				for(int j=0;j<approDriverIndexArr.size();j++) {
+					destDriverList.add(driverList.get(approDriverIndexArr.get(j)));
+				}
+			}
+			
 		}
+		
 		result.setData(destDriverList);
 		return result;
 	}
+	
+	private void findDistanceDriver(String destlocation,String origins,List<Integer> approDriverIndexArr,int baseIndex,int limitDistance) {
+		try {
+			Map<String,Object> param = new HashMap<String,Object>();
+			param.put("key", gaoDeMapWebApiKey);
+			param.put("origins", origins);
+			param.put("destination", destlocation);
+			param.put("output", "JSON");
+			JsonNode result = HttpsUtil.doGet(distanceUrl, param);
+			if(result!=null && result.has("results")) {
+				JsonNode resultList = result.get("results");
+				for(int i=0;i<resultList.size();i++) {
+					JsonNode item = resultList.get(i);
+					Integer originIdx = item.get("origin_id").asInt();
+					Integer distance= item.get("distance").asInt();
+					if(distance<limitDistance) {
+						approDriverIndexArr.add(baseIndex+originIdx-1);
+					}
+				}
+			}
+			logger.info("result:"+result);
+		}catch(Exception e) {
+			logger.error("获取距离失败", e);
+		}
+	}
+ 
 }

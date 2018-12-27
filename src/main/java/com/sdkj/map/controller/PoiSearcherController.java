@@ -80,13 +80,13 @@ public class PoiSearcherController {
     	MobileResultVO result = null;
 		try {
 			String lat = req.getParameter("lat");
-			String log = req.getParameter("log");
+			String lon = req.getParameter("lon");
 			String cityName = req.getParameter("cityName");
 			String distance = req.getParameter("distance");
 			Position position = new Position();
 			position.setLat(Double.valueOf(lat));
-			position.setLog(Double.valueOf(log));
-			result = poiSearcherService.queryNearlyDriver(position, cityName,Double.valueOf(distance));
+			position.setLog(Double.valueOf(lon));
+			result = poiSearcherService.queryNearlyDriver(position, cityName,Integer.valueOf(distance));
 		}catch(Exception e) {
 			logger.error("计算两点距离异常", e);
 			result = new MobileResultVO();

@@ -11,5 +11,5 @@ public interface PoiSearcherService {
 	
 	public MobileResultVO  getDistance(Position start, Position end);
 	
-	public MobileResultVO queryNearlyDriver(Position position,String cityName,Double distance);
+	public MobileResultVO queryNearlyDriver(Position position,String cityName,int distance);
 }
