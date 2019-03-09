@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,8 @@ public class PoiSearcherServiceImpl implements PoiSearcherService {
 	private static final String url = "https://restapi.amap.com/v3/assistant/inputtips";
 	
 	private static final String distanceUrl = "https://restapi.amap.com/v3/distance";
+	
+	private static final String roadDistanceUrl = "https://restapi.amap.com/v3/direction/driving";
 	@Autowired
 	private DriverTraceMapper driverTraceMapper;
 	@Autowired
@@ -169,6 +172,49 @@ public class PoiSearcherServiceImpl implements PoiSearcherService {
 		}catch(Exception e) {
 			logger.error("获取距离失败", e);
 		}
+	}
+	@Override
+	public MobileResultVO caculateRoutDistance(String origin, String destination, String waypoints) {
+		MobileResultVO result = new MobileResultVO();
+		try {
+			Map<String,Object> param = new HashMap<String,Object>();
+			param.put("key", gaoDeMapWebApiKey);
+			param.put("origin", origin);
+			param.put("destination", destination);
+			param.put("size", 1);
+			param.put("showpolyline", 0);
+			param.put("nosteps", 1);
+			param.put("cartype", 1);
+			param.put("strategy", 10);
+			if(StringUtils.isNotEmpty(waypoints)) {
+				param.put("waypoints", waypoints);
+			}
+			param.put("output", "JSON");
+			JsonNode distanceResult = HttpsUtil.doGet(roadDistanceUrl, param);
+			if(distanceResult!=null && distanceResult.has("route")) {
+				JsonNode routeInfo = distanceResult.get("route");
+				if(routeInfo!=null && routeInfo.has("paths")) {
+					JsonNode paths = routeInfo.get("paths");
+					int minDistance = 999999;
+					if(paths!=null && paths.size()>0) {
+						for(JsonNode path:paths) {
+							int itemDistance = path.get("distance").asInt();
+							if(itemDistance<minDistance) {
+								minDistance = itemDistance;
+							}
+						}
+					}
+					float i=1000;
+					int kilometer = (int)Math.ceil(minDistance/i);
+					result.setCode(MobileResultVO.CODE_SUCCESS);
+					result.setMessage(MobileResultVO.OPT_SUCCESS_MESSAGE);
+					result.setData(kilometer);
+				}
+			}
+		}catch(Exception e) {
+			logger.error("获取路线距离失败", e);
+		}
+		return result;
 	}
  
 }

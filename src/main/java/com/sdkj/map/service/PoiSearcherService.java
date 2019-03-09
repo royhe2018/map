@@ -12,4 +12,6 @@ public interface PoiSearcherService {
 	public MobileResultVO  getDistance(Position start, Position end);
 	
 	public MobileResultVO queryNearlyDriver(Position position,String cityName,int distance);
+	
+	public MobileResultVO caculateRoutDistance(String origin,String destination,String waypoints);
 }
