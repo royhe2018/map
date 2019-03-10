@@ -185,7 +185,7 @@ public class PoiSearcherServiceImpl implements PoiSearcherService {
 			param.put("showpolyline", 0);
 			param.put("nosteps", 1);
 			param.put("cartype", 1);
-			param.put("strategy", 10);
+			param.put("strategy", 2);
 			if(StringUtils.isNotEmpty(waypoints)) {
 				param.put("waypoints", waypoints);
 			}
