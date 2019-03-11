@@ -208,9 +208,10 @@ public class ShikraMapSerivceImpl implements ShikraMapSerivce {
 		try{
 			Map<String,Object> param = new HashMap<String,Object>();
 			param.put("key", gaoDeMapWebApiKey);
-			param.put("sid", 8914);
+			param.put("sid", 8914);  
 			param.put("tid", terminalId);
 			param.put("trid", traceId);
+			param.put("correction", "n");
 			JsonNode addTraceResult = HttpsUtil.doGet(findTerminalCurrentLocationUrl,param);
 			if(addTraceResult.has("data") && "10000".equals(addTraceResult.get("errcode").asText())){
 				result.setData(addTraceResult.get("data"));
