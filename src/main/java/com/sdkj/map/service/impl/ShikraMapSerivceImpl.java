@@ -35,6 +35,8 @@ public class ShikraMapSerivceImpl implements ShikraMapSerivce {
 	
 	private static final String addTerminalUrl="https://tsapi.amap.com/v1/track/terminal/add";
 	
+	//private static final String queryTerminalUrl="https://tsapi.amap.com/v1/track/terminal/search?key=9d28f5fda07db528d149fc98f40d2d75&sid=8914&keywords=13058103932";
+	
 	private static final String addTraceUrl = "https://tsapi.amap.com/v1/track/trace/add";
 	
 	private static final String findTerminalCurrentLocationUrl = "https://tsapi.amap.com/v1/track/terminal/lastpoint";
