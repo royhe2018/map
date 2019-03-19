@@ -124,7 +124,7 @@ public class ShikraMapSerivceImpl implements ShikraMapSerivce {
 							if(StringUtils.isNotBlank(mapTerminalId)){
 								user.setMapTerminalId(mapTerminalId);
 								clientUserMapper.updateUser(user);
-								result.setData(addTerminalResult.get("data"));
+								result.setData(terminalInfo);
 								result.setCode(MobileResultVO.CODE_SUCCESS);
 								result.setMessage(MobileResultVO.OPT_SUCCESS_MESSAGE);
 							}
