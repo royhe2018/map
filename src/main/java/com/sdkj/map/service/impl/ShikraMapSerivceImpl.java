@@ -1,5 +1,7 @@
 package com.sdkj.map.service.impl;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.sdkj.map.dao.admWXUser.ClientUserMapper;
 import com.sdkj.map.dao.driverTrace.DriverTraceMapper;
 import com.sdkj.map.domain.po.ClientUser;
@@ -238,16 +241,57 @@ public class ShikraMapSerivceImpl implements ShikraMapSerivce {
 			param.put("sid", 8914);
 			param.put("tid", terminalId);
 			param.put("trid", traceId);
+			param.put("recoup", 1);
+			param.put("gap", 1000);
+			param.put("pagesize", 900);
 			Map<String,Object> correction = new HashMap<String,Object>();
 			correction.put("denoise", "1");
 			correction.put("mapmatch", "1");
 			correction.put("attribute", "1");
-			param.put("correction", "denoise=0,mapmatch=0,attribute=0,threshold=0,mode=driving");
-			JsonNode addTraceResult = HttpsUtil.doGet(findTerminalTraceRouteUrl,param);
-			logger.info(addTraceResult.toString());
-			if(addTraceResult.has("data") && "10000".equals(addTraceResult.get("errcode").asText())
-					&& !addTraceResult.get("data").isNull()){
-				result.setData(addTraceResult.get("data").get("tracks").get(0).get("points"));
+			param.put("correction", "denoise=1,mapmatch=1,attribute=0,threshold=100,mode=driving");
+			ArrayNode allPointList = null;
+			for(int page=1;;page++) {
+				param.put("page", page);
+				JsonNode addTraceResult = HttpsUtil.doGet(findTerminalTraceRouteUrl,param);
+				logger.info(addTraceResult.toString());
+				if(addTraceResult.has("data") && "10000".equals(addTraceResult.get("errcode").asText())
+						&& !addTraceResult.get("data").isNull()){
+					JsonNode points = addTraceResult.get("data").get("tracks").get(0).get("points");
+					if(points!=null && points.size()>0) {
+						logger.info("points size:"+points.size()+"");
+						ArrayNode  pageNode= (ArrayNode)points;
+						if(allPointList==null) {
+							allPointList = pageNode;
+						}else {
+							allPointList.addAll(pageNode);
+						}
+//						if(points!=null) {
+//							int i=0;
+//							for(JsonNode pointItem:points) {
+//								i++;
+//								logger.info("location:"+pointItem.get("location").asText());
+//								String locatetime = pointItem.get("locatetime").asText();
+//								logger.info("locatetime:"+locatetime);
+//								Date time = new Date();
+//								time.setTime(Long.valueOf(locatetime));
+//								logger.info("convert locatetime:"+DateUtilLH.convertDate2Str(time, "yyyy-MM-dd HH:mm:ss"));
+//							}
+//							logger.info("point size :"+i);
+//						}
+						if(pageNode.size()<900) {
+							break;
+						}
+					}else {
+						break;
+					}
+					
+				}else {
+					break;
+				}
+			}
+			if(allPointList!=null && allPointList.size()>0) {
+				logger.info("allPointList size:"+allPointList.size()+"");
+				result.setData(allPointList);
 				result.setCode(MobileResultVO.CODE_SUCCESS);
 				result.setMessage(MobileResultVO.OPT_SUCCESS_MESSAGE);
 			}
