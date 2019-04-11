@@ -73,12 +73,19 @@ public class ShikraMapController {
     
     @RequestMapping(value="/query/terminal/locationt",method=RequestMethod.GET)
 	@ResponseBody
-	public MobileResultVO queryTruckLocation(HttpServletRequest req) {
+	public MobileResultVO queryTruckLocation(HttpServletRequest req,HttpServletResponse response) {
     	MobileResultVO result = null;
 		try {
 			String terminalId = req.getParameter("terminalId");
 			String traceId = req.getParameter("traceId");
 			result = shikraMapService.findTerminalCurrentLocation(terminalId, traceId);
+			String originHeader = req.getHeader("Origin");
+			response.setHeader("Access-Control-Allow-Origin", originHeader);
+			response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE"); 
+			response.setHeader("Access-Control-Max-Age", "0"); 
+			response.setHeader("Access-Control-Allow-Headers", "Authorization,Origin, No-Cache, X-Requested-With, If-Modified-Since, Pragma, Last-Modified, Cache-Control, Expires, Content-Type, X-E4M-With,userId,token"); 
+			response.setHeader("Access-Control-Allow-Credentials", "true"); 
+			response.setHeader("XDomainRequestAllowed","1"); 
 		}catch(Exception e) {
 			logger.error("位置查询异常", e);
 			result = new MobileResultVO();
