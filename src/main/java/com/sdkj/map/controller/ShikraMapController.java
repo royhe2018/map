@@ -85,7 +85,7 @@ public class ShikraMapController {
 			response.setHeader("Access-Control-Max-Age", "0"); 
 			response.setHeader("Access-Control-Allow-Headers", "Authorization,Origin, No-Cache, X-Requested-With, If-Modified-Since, Pragma, Last-Modified, Cache-Control, Expires, Content-Type, X-E4M-With,userId,token"); 
 			response.setHeader("Access-Control-Allow-Credentials", "true"); 
-			response.setHeader("XDomainRequestAllowed","1"); 
+			response.setHeader("XDomainRequestAllowed","1");  
 		}catch(Exception e) {
 			logger.error("位置查询异常", e);
 			result = new MobileResultVO();

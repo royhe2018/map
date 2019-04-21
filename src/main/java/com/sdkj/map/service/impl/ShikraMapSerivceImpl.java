@@ -219,7 +219,18 @@ public class ShikraMapSerivceImpl implements ShikraMapSerivce {
 			param.put("correction", "n");
 			JsonNode addTraceResult = HttpsUtil.doGet(findTerminalCurrentLocationUrl,param);
 			if(addTraceResult.has("data") && "10000".equals(addTraceResult.get("errcode").asText())){
-				result.setData(addTraceResult.get("data"));
+				JsonNode data = addTraceResult.get("data");
+				Map<String,Object> mapData = new HashMap<String,Object>();
+				if(data.has("locatetime")){
+					String locatetime = data.get("locatetime").asText();
+					if(StringUtils.isNotEmpty(locatetime)){
+						Date locateTimeDate = new Date();
+						locateTimeDate.setTime(Long.valueOf(locatetime));
+						mapData.put("locatetime",DateUtilLH.convertDate2Str(locateTimeDate, "yyyy-MM-dd HH:mm:ss"));
+					}
+					mapData.put("location",data.get("location").asText() );
+				}
+				result.setData(mapData);
 				logger.info(addTraceResult.toString());
 				result.setCode(MobileResultVO.CODE_SUCCESS);
 				result.setMessage(MobileResultVO.OPT_SUCCESS_MESSAGE);
