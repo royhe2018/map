@@ -234,6 +234,8 @@ public class ShikraMapSerivceImpl implements ShikraMapSerivce {
 				logger.info(addTraceResult.toString());
 				result.setCode(MobileResultVO.CODE_SUCCESS);
 				result.setMessage(MobileResultVO.OPT_SUCCESS_MESSAGE);
+			}else{
+				logger.info(JsonUtil.convertObjectToJsonStr(addTraceResult));
 			}
 		}catch(Exception e){
 			logger.error("获取轨迹信息异常", e);
