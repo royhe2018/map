@@ -102,7 +102,9 @@ public class ShikraMapController {
 		try {
 			String terminalId = req.getParameter("terminalId");
 			String traceId = req.getParameter("traceId");
-			result = shikraMapService.findTerminalTraceRoute(terminalId, traceId);
+			String startTime = req.getParameter("startTime");
+			String endTime = req.getParameter("endTime");
+			result = shikraMapService.findTerminalTraceRoute(terminalId, traceId,startTime,endTime);
 			String originHeader = req.getHeader("Origin");
 			response.setHeader("Access-Control-Allow-Origin", originHeader);
 			response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE"); 

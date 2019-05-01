@@ -42,5 +42,5 @@ public interface ShikraMapSerivce {
 	 * @param traceId
 	 * @return
 	 */
-	public MobileResultVO findTerminalTraceRoute(String terminalId,String traceId);
+	public MobileResultVO findTerminalTraceRoute(String terminalId,String traceId,String startTime,String endTime);
 }

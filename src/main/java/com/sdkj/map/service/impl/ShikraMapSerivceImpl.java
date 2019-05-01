@@ -46,6 +46,7 @@ public class ShikraMapSerivceImpl implements ShikraMapSerivce {
 	
 	private static final String findTerminalTraceRouteUrl = "https://tsapi.amap.com/v1/track/terminal/trsearch";
 	
+	private static final String findTerminalPointRouteUrl = "https://tsapi.amap.com/v1/track/terminal/points";
 	private static final String queryTerminalUrl = "https://tsapi.amap.com/v1/track/terminal/list";
 	@Autowired
 	private DriverTraceMapper driverTraceMapper;
@@ -244,7 +245,7 @@ public class ShikraMapSerivceImpl implements ShikraMapSerivce {
 	}
 
 	@Override
-	public MobileResultVO findTerminalTraceRoute(String terminalId,String traceId) {
+	public MobileResultVO findTerminalTraceRoute(String terminalId,String traceId,String startTime,String endTime) {
 		MobileResultVO result = new MobileResultVO();
 		result.setCode(MobileResultVO.CODE_FAIL);
 		result.setMessage(MobileResultVO.OPT_FAIL_MESSAGE);
@@ -253,23 +254,26 @@ public class ShikraMapSerivceImpl implements ShikraMapSerivce {
 			param.put("key", gaoDeMapWebApiKey);
 			param.put("sid", 8914);
 			param.put("tid", terminalId);
-			param.put("trid", traceId);
+			//param.put("trid", traceId);
+			param.put("starttime", startTime);
+			param.put("endtime", endTime);
 			param.put("recoup", 1);
-			param.put("gap", 1000);
+			param.put("gap", 1000); 
 			param.put("pagesize", 900);
-			Map<String,Object> correction = new HashMap<String,Object>();
-			correction.put("denoise", "1");
-			correction.put("mapmatch", "1");
-			correction.put("attribute", "1");
-			param.put("correction", "denoise=1,mapmatch=1,attribute=0,threshold=100,mode=driving");
+			param.put("correction", "driving");
+//			Map<String,Object> correction = new HashMap<String,Object>();
+//			correction.put("denoise", "1");
+//			correction.put("mapmatch", "1");
+//			correction.put("attribute", "1");
+//			param.put("correction", "denoise=1,mapmatch=1,attribute=0,threshold=100,mode=driving");
 			ArrayNode allPointList = null;
 			for(int page=1;;page++) {
 				param.put("page", page);
-				JsonNode addTraceResult = HttpsUtil.doGet(findTerminalTraceRouteUrl,param);
+				JsonNode addTraceResult = HttpsUtil.doGet(findTerminalPointRouteUrl,param);
 				logger.info(addTraceResult.toString());
 				if(addTraceResult.has("data") && "10000".equals(addTraceResult.get("errcode").asText())
 						&& !addTraceResult.get("data").isNull()){
-					JsonNode points = addTraceResult.get("data").get("tracks").get(0).get("points");
+					JsonNode points = addTraceResult.get("data").get("points");
 					if(points!=null && points.size()>0) {
 						logger.info("points size:"+points.size()+"");
 						ArrayNode  pageNode= (ArrayNode)points;
