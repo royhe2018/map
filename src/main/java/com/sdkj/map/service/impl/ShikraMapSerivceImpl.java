@@ -1,6 +1,5 @@
 package com.sdkj.map.service.impl;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -44,10 +43,11 @@ public class ShikraMapSerivceImpl implements ShikraMapSerivce {
 	
 	private static final String findTerminalCurrentLocationUrl = "https://tsapi.amap.com/v1/track/terminal/lastpoint";
 	
-	private static final String findTerminalTraceRouteUrl = "https://tsapi.amap.com/v1/track/terminal/trsearch";
 	
 	private static final String findTerminalPointRouteUrl = "https://tsapi.amap.com/v1/track/terminal/points";
 	private static final String queryTerminalUrl = "https://tsapi.amap.com/v1/track/terminal/list";
+	
+	private static final String findNearlyTerminalUrl = "https://tsapi.amap.com/v1/track/terminal/aroundsearch";
 	@Autowired
 	private DriverTraceMapper driverTraceMapper;
 	@Autowired
@@ -337,5 +337,27 @@ public class ShikraMapSerivceImpl implements ShikraMapSerivce {
 	public static void main(String[] args){
 		ShikraMapSerivceImpl test = new ShikraMapSerivceImpl();
 		test.findTerminalCurrentLocation("1778513","1600");
+	}
+
+	@Override
+	public MobileResultVO findNearlyTerminal(String lon, String lat, String radius) {
+		MobileResultVO result = new MobileResultVO();
+		try{
+			Map<String,Object> param = new HashMap<String,Object>();
+			param.put("key", gaoDeMapWebApiKey);
+			param.put("sid", 8914);
+			param.put("center", lon+","+lat);
+			param.put("radius", radius);
+			param.put("pagesize", 100);
+			JsonNode terminalResult = HttpsUtil.doPost(findNearlyTerminalUrl, null, param);
+			if(terminalResult!=null && terminalResult.has("data") && terminalResult.get("data").has("count") && terminalResult.get("data").get("count").asInt()>0){
+				JsonNode terminalResults = terminalResult.get("data").get("results");
+				result.setData(terminalResults);
+			}
+		}catch(Exception e){
+			result.setCode(MobileResultVO.CODE_FAIL);
+			logger.error("查询附近司机异常", e);
+		}
+		return result;
 	}
 }

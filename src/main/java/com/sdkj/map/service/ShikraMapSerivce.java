@@ -43,4 +43,6 @@ public interface ShikraMapSerivce {
 	 * @return
 	 */
 	public MobileResultVO findTerminalTraceRoute(String terminalId,String traceId,String startTime,String endTime);
+	
+	public MobileResultVO findNearlyTerminal(String lon,String lat,String radius);
 }

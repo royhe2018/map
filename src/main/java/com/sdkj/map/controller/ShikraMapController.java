@@ -120,4 +120,22 @@ public class ShikraMapController {
 		}
 		return result;
 	}
+    
+    @RequestMapping(value="/find/nearly/terminal")
+	@ResponseBody
+	public MobileResultVO findNearlyTerminal(HttpServletRequest req){
+    	MobileResultVO result = null;
+    	try{
+    		String lat = req.getParameter("lat");
+    		String lon = req.getParameter("lon");
+    		String radius = req.getParameter("radius");
+    		result = shikraMapService.findNearlyTerminal(lon,lat,radius);
+    	}catch(Exception e){
+    		logger.error("查询附近终端异常",e);
+    		result = new MobileResultVO();
+    		result.setCode(MobileResultVO.CODE_FAIL);
+    		result.setMessage("查询附近终端异常");
+    	}
+    	return result;
+	}
 }
