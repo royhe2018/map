@@ -1,5 +1,6 @@
 package com.sdkj.map.service.impl;
 
+import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.github.pagehelper.StringUtil;
 import com.sdkj.map.dao.admWXUser.ClientUserMapper;
 import com.sdkj.map.dao.driverTrace.DriverTraceMapper;
 import com.sdkj.map.domain.po.ClientUser;
@@ -343,9 +345,18 @@ public class ShikraMapSerivceImpl implements ShikraMapSerivce {
 	public MobileResultVO findNearlyTerminal(String lon, String lat, String radius) {
 		MobileResultVO result = new MobileResultVO();
 		try{
+			DecimalFormat df = new DecimalFormat("#.000000");
 			Map<String,Object> param = new HashMap<String,Object>();
 			param.put("key", gaoDeMapWebApiKey);
 			param.put("sid", 8914);
+			if(StringUtil.isNotEmpty(lon)) {
+				Double lond = Double.valueOf(lon);
+				lon = df.format(lond);
+			}
+			if(StringUtil.isNotEmpty(lat)) {
+				Double latd = Double.valueOf(lat);
+				lat = df.format(latd);
+			}
 			param.put("center", lon+","+lat);
 			param.put("radius", radius);
 			param.put("pagesize", 100);
