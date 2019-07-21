@@ -38,6 +38,8 @@ public class PoiSearcherServiceImpl implements PoiSearcherService {
 	private static final String distanceUrl = "https://restapi.amap.com/v3/distance";
 	
 	private static final String roadDistanceUrl = "https://restapi.amap.com/v3/direction/driving";
+	
+	private static final String locationCityUrl = "https://restapi.amap.com/v3/geocode/regeo";
 	@Autowired
 	private DriverTraceMapper driverTraceMapper;
 	@Autowired
@@ -213,6 +215,24 @@ public class PoiSearcherServiceImpl implements PoiSearcherService {
 			}
 		}catch(Exception e) {
 			logger.error("获取路线距离失败", e);
+		}
+		return result;
+	}
+	@Override
+	public MobileResultVO queryLocationCity(String location) throws Exception{
+		Map<String,Object> param = new HashMap<String,Object>();
+		param.put("key", gaoDeMapWebApiKey);
+		param.put("location", location);
+		param.put("radius", 1000);
+		param.put("output", "JSON");
+		JsonNode locationCityResult = HttpsUtil.doGet(locationCityUrl, param);
+		MobileResultVO result = new MobileResultVO();
+		if(locationCityResult!=null && locationCityResult.has("regeocode")){
+			JsonNode firstAddress = locationCityResult.get("regeocode");
+			if(firstAddress.has("addressComponent")){
+				String city = firstAddress.get("addressComponent").get("city").asText();
+				result.setData(city);
+			}
 		}
 		return result;
 	}

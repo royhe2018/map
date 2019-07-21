@@ -97,21 +97,37 @@ public class PoiSearcherController {
     }
     
     
-    @RequestMapping(value="/query/rout/distance",method=RequestMethod.GET)
+    @RequestMapping(value="/query/location/city",method=RequestMethod.GET)
 	@ResponseBody
-    public MobileResultVO caculateRoutDistance(HttpServletRequest req){
+    public MobileResultVO queryLocationCity(HttpServletRequest req){
     	MobileResultVO result = null;
 		try {
-			String origin = req.getParameter("origin");
-			String destination = req.getParameter("destination");
-			String waypoints = req.getParameter("waypoints");
-			result = poiSearcherService.caculateRoutDistance(origin, destination,waypoints);
+			String location = req.getParameter("location");
+			result = poiSearcherService.queryLocationCity(location);
 		}catch(Exception e) {
-			logger.error("计算两点距离异常", e);
+			logger.error("查询定位点城市名称异常", e);
 			result = new MobileResultVO();
 			result.setCode(MobileResultVO.CODE_FAIL);
 			result.setMessage(MobileResultVO.CHECKCODE_FAIL_MESSAGE);
 		}
 		return result;
     }
+    
+    @RequestMapping(value="/query/rout/distance",method=RequestMethod.GET)
+ 	@ResponseBody
+     public MobileResultVO caculateRoutDistance(HttpServletRequest req){
+     	MobileResultVO result = null;
+ 		try {
+ 			String origin = req.getParameter("origin");
+ 			String destination = req.getParameter("destination");
+ 			String waypoints = req.getParameter("waypoints");
+ 			result = poiSearcherService.caculateRoutDistance(origin, destination,waypoints);
+ 		}catch(Exception e) {
+ 			logger.error("计算两点距离异常", e);
+ 			result = new MobileResultVO();
+ 			result.setCode(MobileResultVO.CODE_FAIL);
+ 			result.setMessage(MobileResultVO.CHECKCODE_FAIL_MESSAGE);
+ 		}
+ 		return result;
+     }
 }
